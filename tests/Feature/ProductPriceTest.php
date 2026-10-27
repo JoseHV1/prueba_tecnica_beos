@@ -40,6 +40,7 @@ class ProductPriceTest extends TestCase
     {
         $this->postJson("/api/products/{$this->product->id}/prices", ['currency_id' => $this->eur->id, 'price' => 95])
             ->assertCreated()
+            ->assertJsonPath('message', 'Price registered successfully.')
             ->assertJsonPath('data.price', '95.00')
             ->assertJsonPath('data.currency.id', $this->eur->id);
     }
@@ -48,6 +49,7 @@ class ProductPriceTest extends TestCase
     {
         $this->postJson("/api/products/{$this->product->id}/prices", ['currency_id' => $this->eur->id])
             ->assertCreated()
+            ->assertJsonPath('message', 'Price calculated from the exchange rates and registered successfully.')
             ->assertJsonPath('data.price', '92.00');
     }
 

@@ -40,6 +40,7 @@ class ProductPriceController extends Controller
         requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(ref: '#/components/schemas/ProductPriceInput')),
         responses: [
             new OA\Response(response: 201, description: 'Creado', content: new OA\JsonContent(properties: [
+                new OA\Property(property: 'message', type: 'string', example: 'Price calculated from the exchange rates and registered successfully.', description: 'Indica si el precio se envió o se calculó con las tasas de cambio'),
                 new OA\Property(property: 'data', ref: '#/components/schemas/ProductPrice'),
             ])),
             new OA\Response(response: 404, ref: '#/components/responses/NotFound'),
@@ -56,6 +57,9 @@ class ProductPriceController extends Controller
         ]);
 
         return ProductPriceResource::make($price->setRelation('currency', $request->currency()))
+            ->additional(['message' => $request->filled('price')
+                ? 'Price registered successfully.'
+                : 'Price calculated from the exchange rates and registered successfully.'])
             ->response()
             ->setStatusCode(Response::HTTP_CREATED);
     }

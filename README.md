@@ -64,7 +64,9 @@ entorno y cambia `baseUrl`.
 
 ## Endpoints
 
-Base: `/api`. Todos responden JSON. Códigos de error: 404 (recurso o ruta inexistente, o id que no es UUID),
+Base: `/api`. Todos responden JSON. Las operaciones que modifican datos (crear, actualizar, eliminar y registrar
+precios) incluyen un campo `message` con la confirmación; al eliminar se devuelve además el producto borrado y
+cuántos precios se eliminaron con él. Códigos de error: 404 (recurso o ruta inexistente, o id que no es UUID),
 409 (registro duplicado por peticiones simultáneas), 422 (validación) y 429 (límite de peticiones).
 
 | Método | Ruta | Descripción |
@@ -74,7 +76,7 @@ Base: `/api`. Todos responden JSON. Códigos de error: 404 (recurso o ruta inexi
 | POST | `/products` | Crea un producto |
 | GET | `/products/{id}` | Producto con sus precios en otras divisas |
 | PUT/PATCH | `/products/{id}` | Actualiza solo los campos enviados (ambos métodos son equivalentes) |
-| DELETE | `/products/{id}` | Elimina el producto y sus precios |
+| DELETE | `/products/{id}` | Elimina el producto y sus precios (200 con confirmación) |
 | GET | `/products/{id}/prices` | Precios del producto en otras divisas |
 | POST | `/products/{id}/prices` | Registra un precio en una divisa |
 

@@ -140,6 +140,10 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product created successfully."
+                                        },
                                         "data": {
                                             "$ref": "#/components/schemas/Product"
                                         }
@@ -235,6 +239,10 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product updated successfully."
+                                        },
                                         "data": {
                                             "$ref": "#/components/schemas/Product"
                                         }
@@ -273,8 +281,40 @@
                     }
                 ],
                 "responses": {
-                    "204": {
-                        "description": "Eliminado"
+                    "200": {
+                        "description": "Eliminado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product deleted successfully."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "format": "uuid",
+                                                    "example": "019a2c3e-7b1f-7d2a-9c4e-1f2a3b4c5d6e"
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Teclado mecánico"
+                                                },
+                                                "deleted_prices": {
+                                                    "description": "Precios en otras divisas eliminados junto al producto",
+                                                    "type": "integer",
+                                                    "example": 2
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "404": {
                         "$ref": "#/components/responses/NotFound"
@@ -319,6 +359,10 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product updated successfully."
+                                        },
                                         "data": {
                                             "$ref": "#/components/schemas/Product"
                                         }
@@ -420,6 +464,11 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "message": {
+                                            "description": "Indica si el precio se envió o se calculó con las tasas de cambio",
+                                            "type": "string",
+                                            "example": "Price calculated from the exchange rates and registered successfully."
+                                        },
                                         "data": {
                                             "$ref": "#/components/schemas/ProductPrice"
                                         }

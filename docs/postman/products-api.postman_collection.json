@@ -85,7 +85,8 @@
                 "exec": [
                   "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
                   "pm.collectionVariables.set(\"product_id\", pm.response.json().data.id);",
-                  "pm.test(\"precio formateado\", () => pm.expect(pm.response.json().data.price).to.eql(\"150.00\"));"
+                  "pm.test(\"precio formateado\", () => pm.expect(pm.response.json().data.price).to.eql(\"150.00\"));",
+                  "pm.test(\"mensaje\", () => pm.expect(pm.response.json().message).to.eql(\"Product created successfully.\"));"
                 ]
               }
             }
@@ -283,7 +284,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
-                  "pm.test(\"nombre actualizado\", () => pm.expect(pm.response.json().data.name).to.eql(\"Silla ergonómica Pro\"));"
+                  "pm.test(\"nombre actualizado\", () => pm.expect(pm.response.json().data.name).to.eql(\"Silla ergonómica Pro\"));",
+                  "pm.test(\"mensaje\", () => pm.expect(pm.response.json().message).to.eql(\"Product updated successfully.\"));"
                 ]
               }
             }
@@ -385,7 +387,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
-                  "pm.test(\"importe enviado\", () => pm.expect(pm.response.json().data.price).to.eql(\"165.90\"));"
+                  "pm.test(\"importe enviado\", () => pm.expect(pm.response.json().data.price).to.eql(\"165.90\"));",
+                  "pm.test(\"mensaje\", () => pm.expect(pm.response.json().message).to.eql(\"Price registered successfully.\"));"
                 ]
               }
             }
@@ -434,7 +437,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
-                  "pm.test(\"180 USD × 18.5 = 3330.00 MXN\", () => pm.expect(pm.response.json().data.price).to.eql(\"3330.00\"));"
+                  "pm.test(\"180 USD × 18.5 = 3330.00 MXN\", () => pm.expect(pm.response.json().data.price).to.eql(\"3330.00\"));",
+                  "pm.test(\"mensaje\", () => pm.expect(pm.response.json().message).to.eql(\"Price calculated from the exchange rates and registered successfully.\"));"
                 ]
               }
             }
@@ -1272,7 +1276,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
                 ]
               }
             }
@@ -1312,7 +1316,9 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"mensaje\", () => pm.expect(pm.response.json().message).to.eql(\"Product deleted successfully.\"));",
+                  "pm.test(\"precios eliminados\", () => pm.expect(pm.response.json().data.deleted_prices).to.eql(2));"
                 ]
               }
             }
@@ -1335,7 +1341,7 @@
                 "{{product_id}}"
               ]
             },
-            "description": ""
+            "description": "Devuelve un mensaje de confirmación con el producto borrado y cuántos precios se eliminaron con él."
           }
         },
         {

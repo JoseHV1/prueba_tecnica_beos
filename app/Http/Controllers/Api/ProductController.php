@@ -53,6 +53,7 @@ class ProductController extends Controller
         requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(ref: '#/components/schemas/ProductInput')),
         responses: [
             new OA\Response(response: 201, description: 'Creado', content: new OA\JsonContent(properties: [
+                new OA\Property(property: 'message', type: 'string', example: 'Product created successfully.'),
                 new OA\Property(property: 'data', ref: '#/components/schemas/Product'),
             ])),
             new OA\Response(response: 422, ref: '#/components/responses/ValidationError'),
@@ -64,6 +65,7 @@ class ProductController extends Controller
         $product = Product::create($request->validated());
 
         return ProductResource::make($product->load('currency'))
+            ->additional(['message' => 'Product created successfully.'])
             ->response()
             ->setStatusCode(Response::HTTP_CREATED);
     }
@@ -95,6 +97,7 @@ class ProductController extends Controller
         requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(ref: '#/components/schemas/ProductUpdateInput')),
         responses: [
             new OA\Response(response: 200, description: 'Actualizado', content: new OA\JsonContent(properties: [
+                new OA\Property(property: 'message', type: 'string', example: 'Product updated successfully.'),
                 new OA\Property(property: 'data', ref: '#/components/schemas/Product'),
             ])),
             new OA\Response(response: 404, ref: '#/components/responses/NotFound'),
@@ -111,6 +114,7 @@ class ProductController extends Controller
         requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(ref: '#/components/schemas/ProductUpdateInput')),
         responses: [
             new OA\Response(response: 200, description: 'Actualizado', content: new OA\JsonContent(properties: [
+                new OA\Property(property: 'message', type: 'string', example: 'Product updated successfully.'),
                 new OA\Property(property: 'data', ref: '#/components/schemas/Product'),
             ])),
             new OA\Response(response: 404, ref: '#/components/responses/NotFound'),
@@ -122,7 +126,8 @@ class ProductController extends Controller
     {
         $product->update($request->validated());
 
-        return ProductResource::make($product->load('currency'));
+        return ProductResource::make($product->load('currency'))
+            ->additional(['message' => 'Product updated successfully.']);
     }
 
     #[OA\Delete(
@@ -131,15 +136,26 @@ class ProductController extends Controller
         tags: ['Products'],
         parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'string', format: 'uuid'))],
         responses: [
-            new OA\Response(response: 204, description: 'Eliminado'),
+            new OA\Response(response: 200, description: 'Eliminado', content: new OA\JsonContent(properties: [
+                new OA\Property(property: 'message', type: 'string', example: 'Product deleted successfully.'),
+                new OA\Property(property: 'data', properties: [
+                    new OA\Property(property: 'id', type: 'string', format: 'uuid', example: '019a2c3e-7b1f-7d2a-9c4e-1f2a3b4c5d6e'),
+                    new OA\Property(property: 'name', type: 'string', example: 'Teclado mecánico'),
+                    new OA\Property(property: 'deleted_prices', type: 'integer', example: 2, description: 'Precios en otras divisas eliminados junto al producto'),
+                ], type: 'object'),
+            ])),
             new OA\Response(response: 404, ref: '#/components/responses/NotFound'),
             new OA\Response(response: 429, ref: '#/components/responses/TooManyRequests'),
         ]
     )]
-    public function destroy(Product $product): Response
+    public function destroy(Product $product): JsonResponse
     {
+        $deletedPrices = $product->prices()->count();
         $product->delete();
 
-        return response()->noContent();
+        return response()->json([
+            'message' => 'Product deleted successfully.',
+            'data' => ['id' => $product->id, 'name' => $product->name, 'deleted_prices' => $deletedPrices],
+        ]);
     }
 }

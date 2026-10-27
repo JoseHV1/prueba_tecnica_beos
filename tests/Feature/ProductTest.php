@@ -47,6 +47,7 @@ class ProductTest extends TestCase
             'manufacturing_cost' => 45,
         ])
             ->assertCreated()
+            ->assertJsonPath('message', 'Product created successfully.')
             ->assertJsonPath('data.name', 'Teclado')
             ->assertJsonPath('data.price', '120.50')
             ->assertJsonPath('data.currency.id', $currency->id);
@@ -84,16 +85,22 @@ class ProductTest extends TestCase
 
         $this->putJson("/api/products/{$product->id}", ['name' => 'Nuevo'])
             ->assertOk()
+            ->assertJsonPath('message', 'Product updated successfully.')
             ->assertJsonPath('data.name', 'Nuevo')
             ->assertJsonPath('data.price', $product->price);
     }
 
     public function test_it_deletes_a_product_and_its_prices(): void
     {
-        $product = Product::factory()->create();
+        $product = Product::factory()->create(['name' => 'Teclado']);
         $product->prices()->create(['currency_id' => Currency::factory()->create()->id, 'price' => 10]);
 
-        $this->deleteJson("/api/products/{$product->id}")->assertNoContent();
+        $this->deleteJson("/api/products/{$product->id}")
+            ->assertOk()
+            ->assertExactJson([
+                'message' => 'Product deleted successfully.',
+                'data' => ['id' => $product->id, 'name' => 'Teclado', 'deleted_prices' => 1],
+            ]);
 
         $this->assertModelMissing($product);
         $this->assertDatabaseCount('product_prices', 0);

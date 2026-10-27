@@ -122,6 +122,7 @@
                     "Products"
                 ],
                 "summary": "Crear un producto",
+                "description": "El nombre debe ser único: si ya existe un producto con ese nombre se responde 422.",
                 "operationId": "eddf8c7847239ddc1040daadd814e21b",
                 "requestBody": {
                     "required": true,
@@ -209,7 +210,7 @@
                     "Products"
                 ],
                 "summary": "Actualizar un producto",
-                "description": "Actualización parcial: solo se modifican los campos enviados. `currency_id` no puede ser una divisa en la que el producto ya tenga un precio adicional (422).",
+                "description": "Actualización parcial: solo se modifican los campos enviados. `name` no puede coincidir con el de otro producto y `currency_id` no puede ser una divisa en la que el producto ya tenga un precio adicional (422).",
                 "operationId": "2ce632b9d1c0c445557821d09add7ec2",
                 "parameters": [
                     {
@@ -329,7 +330,7 @@
                     "Products"
                 ],
                 "summary": "Actualizar un producto (equivalente a PUT)",
-                "description": "Actualización parcial: solo se modifican los campos enviados. `currency_id` no puede ser una divisa en la que el producto ya tenga un precio adicional (422).",
+                "description": "Actualización parcial: solo se modifican los campos enviados. `name` no puede coincidir con el de otro producto y `currency_id` no puede ser una divisa en la que el producto ya tenga un precio adicional (422).",
                 "operationId": "8204cc45c64088529e69c8f6b6880545",
                 "parameters": [
                     {
@@ -523,6 +524,7 @@
                 "description": "Todos los campos son opcionales: solo se actualizan los enviados.",
                 "properties": {
                     "name": {
+                        "description": "Único entre todos los productos (no distingue mayúsculas).",
                         "type": "string",
                         "example": "Teclado mecánico",
                         "maxLength": 255

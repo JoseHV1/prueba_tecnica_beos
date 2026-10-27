@@ -14,7 +14,7 @@ class ProductFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => ucfirst(fake()->words(3, true)),
+            'name' => ucfirst(fake()->unique()->words(3, true)),
             'description' => fake()->sentence(12),
             'price' => fake()->randomFloat(2, 10, 1000),
             'currency_id' => Currency::factory(),

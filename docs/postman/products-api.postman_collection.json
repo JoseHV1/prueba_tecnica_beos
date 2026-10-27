@@ -649,6 +649,53 @@
           }
         },
         {
+          "name": "Crear producto con nombre repetido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"error de nombre duplicado\", () => pm.expect(pm.response.json().errors.name[0]).to.eql(\"A product with this name already exists.\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/products",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products"
+              ]
+            },
+            "description": "Ya existe un producto con ese nombre (lo creó la petición Crear producto).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Silla ergonómica\",\n  \"description\": \"Silla de oficina con soporte lumbar y reposabrazos ajustables\",\n  \"price\": 150.0,\n  \"currency_id\": \"{{usd_id}}\",\n  \"tax_cost\": 24.0,\n  \"manufacturing_cost\": 80.0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
           "name": "Crear producto con divisa inexistente",
           "event": [
             {
@@ -685,7 +732,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Silla ergonómica\",\n  \"description\": \"Silla de oficina con soporte lumbar y reposabrazos ajustables\",\n  \"price\": 150.0,\n  \"currency_id\": \"01a17d71-0000-7000-8000-000000000000\",\n  \"tax_cost\": 24.0,\n  \"manufacturing_cost\": 80.0\n}",
+              "raw": "{\n  \"name\": \"Otro producto\",\n  \"description\": \"Silla de oficina con soporte lumbar y reposabrazos ajustables\",\n  \"price\": 150.0,\n  \"currency_id\": \"01a17d71-0000-7000-8000-000000000000\",\n  \"tax_cost\": 24.0,\n  \"manufacturing_cost\": 80.0\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -731,7 +778,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Silla ergonómica\",\n  \"description\": \"Silla de oficina con soporte lumbar y reposabrazos ajustables\",\n  \"price\": 99999999999,\n  \"currency_id\": \"{{usd_id}}\",\n  \"tax_cost\": 24.0,\n  \"manufacturing_cost\": 80.0\n}",
+              "raw": "{\n  \"name\": \"Otro producto\",\n  \"description\": \"Silla de oficina con soporte lumbar y reposabrazos ajustables\",\n  \"price\": 99999999999,\n  \"currency_id\": \"{{usd_id}}\",\n  \"tax_cost\": 24.0,\n  \"manufacturing_cost\": 80.0\n}",
               "options": {
                 "raw": {
                   "language": "json"

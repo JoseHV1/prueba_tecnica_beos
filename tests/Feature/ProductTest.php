@@ -175,4 +175,20 @@ class ProductTest extends TestCase
             ->assertCreated()
             ->assertJsonPath('data.currency.id', $currency->id);
     }
+
+    public function test_product_names_are_unique(): void
+    {
+        $existing = Product::factory()->create(['name' => 'Silla']);
+        $other = Product::factory()->create(['name' => 'Mesa']);
+
+        $this->postJson('/api/products', ['name' => 'Silla'])
+            ->assertUnprocessable()
+            ->assertJsonPath('errors.name.0', 'A product with this name already exists.');
+
+        $this->patchJson("/api/products/{$other->id}", ['name' => 'Silla'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('name');
+
+        $this->patchJson("/api/products/{$existing->id}", ['name' => 'Silla', 'price' => 10])->assertOk();
+    }
 }

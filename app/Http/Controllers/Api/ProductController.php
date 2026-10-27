@@ -49,6 +49,7 @@ class ProductController extends Controller
     #[OA\Post(
         path: '/products',
         summary: 'Crear un producto',
+        description: 'El nombre debe ser único: si ya existe un producto con ese nombre se responde 422.',
         tags: ['Products'],
         requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(ref: '#/components/schemas/ProductInput')),
         responses: [
@@ -91,7 +92,7 @@ class ProductController extends Controller
     #[OA\Put(
         path: '/products/{id}',
         summary: 'Actualizar un producto',
-        description: 'Actualización parcial: solo se modifican los campos enviados. `currency_id` no puede ser una divisa en la que el producto ya tenga un precio adicional (422).',
+        description: 'Actualización parcial: solo se modifican los campos enviados. `name` no puede coincidir con el de otro producto y `currency_id` no puede ser una divisa en la que el producto ya tenga un precio adicional (422).',
         tags: ['Products'],
         parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'string', format: 'uuid'))],
         requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(ref: '#/components/schemas/ProductUpdateInput')),
@@ -108,7 +109,7 @@ class ProductController extends Controller
     #[OA\Patch(
         path: '/products/{id}',
         summary: 'Actualizar un producto (equivalente a PUT)',
-        description: 'Actualización parcial: solo se modifican los campos enviados. `currency_id` no puede ser una divisa en la que el producto ya tenga un precio adicional (422).',
+        description: 'Actualización parcial: solo se modifican los campos enviados. `name` no puede coincidir con el de otro producto y `currency_id` no puede ser una divisa en la que el producto ya tenga un precio adicional (422).',
         tags: ['Products'],
         parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'string', format: 'uuid'))],
         requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(ref: '#/components/schemas/ProductUpdateInput')),

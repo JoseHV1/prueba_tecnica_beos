@@ -106,6 +106,8 @@ curl -s -X POST localhost:8000/api/products/<UUID PRODUCTO>/prices \
 - Un producto tiene como mucho un precio por divisa, y nunca en su propia divisa base
   (ese precio ya está en el producto). Lo garantiza la validación (422) y un índice único en BD; si dos
   peticiones simultáneas registran la misma divisa, la segunda recibe 409.
+- El nombre del producto es único (sin distinguir mayúsculas): un mismo producto en varias divisas se representa
+  con su precio base y sus precios adicionales, no duplicándolo. Un nombre repetido devuelve 422.
 - La divisa base de un producto no puede cambiarse a una en la que ya tiene un precio adicional.
 - Si el precio calculado supera el máximo (`9999999999.99`) se responde 422 y hay que enviarlo explícitamente.
 - La búsqueda (`?search=`) trata `%` y `_` como texto literal.
@@ -133,7 +135,8 @@ tests/Feature/             Product, ProductPrice, Seeder
 - **Rate limiting**: 60 peticiones/min por IP (cabeceras `X-RateLimit-*`, 429 al superarlo).
 - Validación de toda entrada con **FormRequests** (tipos, rangos, 2 decimales, existencia de FKs).
 - Protección contra *mass assignment* (`$fillable` + solo se persiste `validated()`).
-- Integridad en BD: claves foráneas, `restrictOnDelete` en divisas, índice único por producto/divisa.
+- Integridad en BD: claves foráneas, `restrictOnDelete` en divisas, índices únicos en el nombre del producto y
+  por producto/divisa.
 - Errores siempre en JSON. Con `APP_DEBUG=false` (producción) no incluyen trazas; el 404 nunca expone nombres
   de clases. `.env.example` trae `APP_DEBUG=true` para desarrollo.
 - `Model::shouldBeStrict()` fuera de producción: un lazy loading (N+1) lanza excepción.
@@ -151,5 +154,5 @@ lo fija un test.
 php artisan test
 ```
 
-21 tests de feature (SQLite en memoria, sin tocar MySQL) que cubren CRUD, paginación y búsqueda, validación,
+22 tests de feature (SQLite en memoria, sin tocar MySQL) que cubren CRUD, paginación y búsqueda, validación,
 404, conversión de divisas, duplicados, rate limiting, número de consultas (N+1) y seeders.

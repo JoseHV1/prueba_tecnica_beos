@@ -1,0 +1,709 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Products API",
+        "description": "API RESTful para gestionar productos y sus precios en distintas divisas.\n\n- Todas las respuestas son JSON; los identificadores son UUID.\n- Los importes se devuelven como string con 2 decimales (`\"120.50\"`).\n- Límite de 60 peticiones por minuto por IP (cabeceras `X-RateLimit-*`); al superarlo se responde 429.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "/api",
+            "description": "API base"
+        }
+    ],
+    "paths": {
+        "/currencies": {
+            "get": {
+                "tags": [
+                    "Currencies"
+                ],
+                "summary": "Listar divisas disponibles",
+                "operationId": "11ba51d6025f25a760f405e99468818d",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Currency"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests"
+                    }
+                }
+            }
+        },
+        "/products": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Listar productos (paginado)",
+                "description": "Ordenados del más reciente al más antiguo. Cada producto incluye su divisa base.",
+                "operationId": "080f057905dc32d2f11065d606dc4cd6",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Filtra por nombre (contiene). `%` y `_` se buscan como texto.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 255
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15,
+                            "maximum": 100,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Product"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Crear un producto",
+                "operationId": "eddf8c7847239ddc1040daadd814e21b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProductInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Creado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Product"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests"
+                    }
+                }
+            }
+        },
+        "/products/{id}": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Obtener un producto con sus precios",
+                "operationId": "b5099368868dbe7900acd129345eb148",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Product"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Actualizar un producto",
+                "description": "Actualización parcial: solo se modifican los campos enviados. `currency_id` no puede ser una divisa en la que el producto ya tenga un precio adicional (422).",
+                "operationId": "2ce632b9d1c0c445557821d09add7ec2",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProductUpdateInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Actualizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Product"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Eliminar un producto y sus precios",
+                "operationId": "76bb7dc4ab3fc3233d5b33ef58e95d7d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Eliminado"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests"
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Actualizar un producto (equivalente a PUT)",
+                "description": "Actualización parcial: solo se modifican los campos enviados. `currency_id` no puede ser una divisa en la que el producto ya tenga un precio adicional (422).",
+                "operationId": "8204cc45c64088529e69c8f6b6880545",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProductUpdateInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Actualizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Product"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests"
+                    }
+                }
+            }
+        },
+        "/products/{id}/prices": {
+            "get": {
+                "tags": [
+                    "Product prices"
+                ],
+                "summary": "Listar los precios de un producto en otras divisas",
+                "operationId": "2e75a51cb023b7266ee62dea2a521a9b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ProductPrice"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Product prices"
+                ],
+                "summary": "Registrar el precio de un producto en una divisa",
+                "description": "Una divisa por producto, distinta de la divisa base. Si no se envía `price`, se calcula a partir de las tasas de cambio.",
+                "operationId": "11fd6aaaba98ff94acbb27f0d7773ff5",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProductPriceInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Creado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/ProductPrice"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "409": {
+                        "description": "Otra petición simultánea registró la misma divisa"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "ProductPriceInput": {
+                "required": [
+                    "currency_id"
+                ],
+                "properties": {
+                    "currency_id": {
+                        "description": "UUID de una divisa existente, distinta de la divisa base del producto y sin precio registrado para este producto (no distingue mayúsculas).",
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "019a2c3e-6a0b-7c19-8b3d-0e1f2a3b4c5d"
+                    },
+                    "price": {
+                        "description": "Máximo 2 decimales. Si se omite o es null, se calcula como precio_base × tasa_destino / tasa_base redondeado a 2 decimales; si el resultado supera el máximo se responde 422.",
+                        "type": "number",
+                        "format": "decimal",
+                        "example": 110.9,
+                        "nullable": true,
+                        "maximum": 9999999999.99,
+                        "minimum": 0
+                    }
+                },
+                "type": "object"
+            },
+            "ProductUpdateInput": {
+                "description": "Todos los campos son opcionales: solo se actualizan los enviados.",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "Teclado mecánico",
+                        "maxLength": 255
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Teclado mecánico con switches rojos",
+                        "maxLength": 2000
+                    },
+                    "price": {
+                        "description": "Máximo 2 decimales. También se acepta como string numérico.",
+                        "type": "number",
+                        "format": "decimal",
+                        "example": 120.5,
+                        "maximum": 9999999999.99,
+                        "minimum": 0
+                    },
+                    "currency_id": {
+                        "description": "UUID de una divisa existente (no distingue mayúsculas).",
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "019a2c3e-6a0b-7c19-8b3d-0e1f2a3b4c5d"
+                    },
+                    "tax_cost": {
+                        "description": "Máximo 2 decimales. También se acepta como string numérico.",
+                        "type": "number",
+                        "format": "decimal",
+                        "example": 19.28,
+                        "maximum": 9999999999.99,
+                        "minimum": 0
+                    },
+                    "manufacturing_cost": {
+                        "description": "Máximo 2 decimales. También se acepta como string numérico.",
+                        "type": "number",
+                        "format": "decimal",
+                        "example": 45,
+                        "maximum": 9999999999.99,
+                        "minimum": 0
+                    }
+                },
+                "type": "object"
+            },
+            "ProductInput": {
+                "required": [
+                    "name",
+                    "description",
+                    "price",
+                    "currency_id",
+                    "tax_cost",
+                    "manufacturing_cost"
+                ],
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/ProductUpdateInput"
+                    }
+                ]
+            },
+            "Currency": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "019a2c3e-6a0b-7c19-8b3d-0e1f2a3b4c5d"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "USD"
+                    },
+                    "symbol": {
+                        "type": "string",
+                        "example": "$"
+                    },
+                    "exchange_rate": {
+                        "description": "Unidades de esta divisa por 1 USD, con 6 decimales.",
+                        "type": "string",
+                        "example": "1.000000"
+                    }
+                },
+                "type": "object"
+            },
+            "ProductPrice": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "019a2c3e-8c2d-7e3f-a4b5-c6d7e8f90a1b"
+                    },
+                    "product_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "019a2c3e-7b1f-7d2a-9c4e-1f2a3b4c5d6e"
+                    },
+                    "price": {
+                        "type": "string",
+                        "example": "110.90"
+                    },
+                    "currency": {
+                        "$ref": "#/components/schemas/Currency"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Product": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "019a2c3e-7b1f-7d2a-9c4e-1f2a3b4c5d6e"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Teclado mecánico"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Teclado mecánico con switches rojos"
+                    },
+                    "price": {
+                        "type": "string",
+                        "example": "120.50"
+                    },
+                    "currency": {
+                        "$ref": "#/components/schemas/Currency"
+                    },
+                    "tax_cost": {
+                        "type": "string",
+                        "example": "19.28"
+                    },
+                    "manufacturing_cost": {
+                        "type": "string",
+                        "example": "45.00"
+                    },
+                    "prices": {
+                        "description": "Solo en GET /products/{id}. Precios en divisas distintas a la base.",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ProductPrice"
+                        }
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "responses": {
+            "NotFound": {
+                "description": "Recurso no encontrado",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "Resource not found."
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "TooManyRequests": {
+                "description": "Límite de 60 peticiones por minuto superado",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "Too Many Attempts."
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ValidationError": {
+                "description": "Datos inválidos",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "The name field is required."
+                                },
+                                "errors": {
+                                    "type": "object",
+                                    "example": {
+                                        "name": [
+                                            "The name field is required."
+                                        ]
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Currencies",
+            "description": "Currencies"
+        },
+        {
+            "name": "Products",
+            "description": "Products"
+        },
+        {
+            "name": "Product prices",
+            "description": "Product prices"
+        }
+    ]
+}
